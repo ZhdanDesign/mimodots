@@ -123,21 +123,9 @@ bg.setAttribute("width",sw);bg.setAttribute("height",sh);bg.setAttribute("fill",
 
 if(assetImg&&assetImg.complete&&assetImg.naturalWidth>0){
 var iw=assetImg.naturalWidth,ih=assetImg.naturalHeight;
-var scale=Math.max(sw/iw,sh/ih);
+var scale=Math.min(sw/iw,sh/ih);
 var dw=iw*scale,dh=ih*scale;
 var dx=(sw-dw)/2,dy=(sh-dh)/2;
-
-var clip=document.createElementNS(ns,"clipPath");
-clip.setAttribute("id","cclip");
-var clipRect=document.createElementNS(ns,"rect");
-clipRect.setAttribute("x","0");clipRect.setAttribute("y","0");
-clipRect.setAttribute("width",sw);clipRect.setAttribute("height",sh);
-clip.appendChild(clipRect);
-svg.appendChild(clip);
-
-var g=document.createElementNS(ns,"g");
-g.setAttribute("clip-path","url(#cclip)");
-g.setAttribute("opacity","0.35");
 
 var imgEl=document.createElementNS(ns,"image");
 imgEl.setAttributeNS("http://www.w3.org/1999/xlink","href",assetImg.src);
@@ -145,8 +133,8 @@ imgEl.setAttribute("x",dx);
 imgEl.setAttribute("y",dy);
 imgEl.setAttribute("width",dw);
 imgEl.setAttribute("height",dh);
-g.appendChild(imgEl);
-svg.appendChild(g);
+imgEl.setAttribute("opacity","0.35");
+svg.appendChild(imgEl);
 }
 
 for(var x=0;x<=cols;x++){var l=document.createElementNS(ns,"line");l.setAttribute("x1",x*c);l.setAttribute("y1",0);l.setAttribute("x2",x*c);l.setAttribute("y2",sh);l.setAttribute("stroke","rgba(255,255,255,0.08)");l.setAttribute("stroke-width","0.3");svg.appendChild(l)}
