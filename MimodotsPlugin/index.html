@@ -56,7 +56,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
 </div>
 <div class="sec">
 <div class="st">Asset</div>
-<div id="dropzone">Drag SVG here</div>
+<div id="dropzone">Drag object from document or click Grab</div>
 <div class="row-btns">
 <button class="btn" id="grabBtn">Grab selection</button>
 <button class="btn" id="resetBtn">Reset</button>
@@ -79,6 +79,7 @@ var S={w:32,h:32,s:"square",g:10,c:"#4caf50"};
 var ns="http://www.w3.org/2000/svg";
 var cs=new CSInterface();
 var assetSVG=null;
+var assetImg=null;
 
 document.querySelectorAll("[data-s]").forEach(function(b){b.addEventListener("click",function(){
 document.querySelectorAll("[data-s]").forEach(function(x){x.classList.remove("a")});
@@ -91,31 +92,65 @@ document.getElementById("cp").addEventListener("input",function(){S.c=this.value
 
 function dl(){document.getElementById("dl").textContent=S.w+" x "+S.h}
 
+function loadAssetFromString(svgStr){
+assetSVG=svgStr;
+assetImg=new Image();
+var blob=new Blob([svgStr],{type:"image/svg+xml;charset=utf-8"});
+var url=URL.createObjectURL(blob);
+assetImg.onload=function(){
+URL.revokeObjectURL(url);
+document.getElementById("dropzone").textContent="Loaded";
+document.getElementById("dropzone").className="loaded";
+render();
+};
+assetImg.onerror=function(){
+URL.revokeObjectURL(url);
+assetSVG=null;
+assetImg=null;
+document.getElementById("dropzone").textContent="Failed to load SVG";
+};
+assetImg.src=url;
+}
+
 function render(){
 try{
 var cols=S.w,rows=S.h,gf=S.g/100,c=10,pad=c*gf/2,inn=c-pad*2,sw=cols*c,sh=rows*c;
 var svg=document.createElementNS(ns,"svg");
 svg.setAttribute("viewBox","0 0 "+sw+" "+sh);
-svg.setAttribute("overflow","hidden");
+
 var bg=document.createElementNS(ns,"rect");
 bg.setAttribute("width",sw);bg.setAttribute("height",sh);bg.setAttribute("fill","#1a1a1a");svg.appendChild(bg);
 
+if(assetImg&&assetImg.complete&&assetImg.naturalWidth>0){
+var iw=assetImg.naturalWidth,ih=assetImg.naturalHeight;
+var scale=Math.max(sw/iw,sh/ih);
+var dw=iw*scale,dh=ih*scale;
+var dx=(sw-dw)/2,dy=(sh-dh)/2;
+
+var clip=document.createElementNS(ns,"clipPath");
+clip.setAttribute("id","cclip");
+var clipRect=document.createElementNS(ns,"rect");
+clipRect.setAttribute("x","0");clipRect.setAttribute("y","0");
+clipRect.setAttribute("width",sw);clipRect.setAttribute("height",sh);
+clip.appendChild(clipRect);
+svg.appendChild(clip);
+
+var g=document.createElementNS(ns,"g");
+g.setAttribute("clip-path","url(#cclip)");
+g.setAttribute("opacity","0.35");
+
+var imgEl=document.createElementNS(ns,"image");
+imgEl.setAttributeNS("http://www.w3.org/1999/xlink","href",assetImg.src);
+imgEl.setAttribute("x",dx);
+imgEl.setAttribute("y",dy);
+imgEl.setAttribute("width",dw);
+imgEl.setAttribute("height",dh);
+g.appendChild(imgEl);
+svg.appendChild(g);
+}
+
 for(var x=0;x<=cols;x++){var l=document.createElementNS(ns,"line");l.setAttribute("x1",x*c);l.setAttribute("y1",0);l.setAttribute("x2",x*c);l.setAttribute("y2",sh);l.setAttribute("stroke","rgba(255,255,255,0.08)");l.setAttribute("stroke-width","0.3");svg.appendChild(l)}
 for(var y=0;y<=rows;y++){var l2=document.createElementNS(ns,"line");l2.setAttribute("x1",0);l2.setAttribute("y1",y*c);l2.setAttribute("x2",sw);l2.setAttribute("y2",y*c);l2.setAttribute("stroke","rgba(255,255,255,0.08)");l2.setAttribute("stroke-width","0.3");svg.appendChild(l2)}
-
-if(assetSVG){
-try{
-var b64=btoa(unescape(encodeURIComponent(assetSVG)));
-var img=document.createElementNS(ns,"image");
-img.setAttribute("href","data:image/svg+xml;base64,"+b64);
-img.setAttribute("x","0");
-img.setAttribute("y","0");
-img.setAttribute("width",sw);
-img.setAttribute("height",sh);
-img.setAttribute("opacity","0.35");
-img.setAttribute("preserveAspectRatio","xMidYMid slice");
-svg.appendChild(img);
-}catch(e){}}
 
 for(var py=0;py<rows;py++){for(var px=0;px<cols;px++){
 var cx2=px*c+pad+inn/2,cy2=py*c+pad+inn/2,el;
@@ -139,35 +174,39 @@ document.getElementById("dl").textContent=res||"Done";
 document.getElementById("grabBtn").addEventListener("click",function(){
 cs.evalScript("getSelectedAsSVG()",function(res){
 if(res&&res.indexOf("<")>=0){
-assetSVG=res;
-document.getElementById("dropzone").textContent="Loaded";
-document.getElementById("dropzone").className="loaded";
-render();
+loadAssetFromString(res);
 }
 })});
 
 document.getElementById("resetBtn").addEventListener("click",function(){
 assetSVG=null;
-document.getElementById("dropzone").textContent="Drag SVG here";
+assetImg=null;
+document.getElementById("dropzone").textContent="Drag object from document or click Grab";
 document.getElementById("dropzone").className="";
 render();
 });
 
 var dz=document.getElementById("dropzone");
+cs.addEventListener("com.adobe.csxs.events.Drop",function(e){
+var data=e.data?JSON.parse(e.data):null;
+if(data&&data-svguri){
+cs.evalScript("getSVGByUri('"+data-svguri+"')",function(res){
+if(res&&res.indexOf("<")>=0){loadAssetFromString(res);}
+});
+}
+});
 dz.addEventListener("dragover",function(e){e.preventDefault();dz.className="over"});
 dz.addEventListener("dragleave",function(){if(assetSVG){dz.className="loaded"}else{dz.className=""}});
 dz.addEventListener("drop",function(e){
 e.preventDefault();
-var files=e.dataTransfer.files;
+var files=e.dataTransfer&&e.dataTransfer.files;
 if(files&&files.length>0){
+var f=files[0];
+if(f.type==="image/svg+xml"||f.name.match(/\.svg$/i)){
 var reader=new FileReader();
-reader.onload=function(ev){
-assetSVG=ev.target.result;
-dz.textContent="Loaded";
-dz.className="loaded";
-render();
-};
-reader.readAsText(files[0]);
+reader.onload=function(ev){loadAssetFromString(ev.target.result)};
+reader.readAsText(f);
+}
 }
 });
 

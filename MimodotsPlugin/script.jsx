@@ -85,7 +85,6 @@ function getSelectedAsSVG() {
       if (sel[j] === item) { isSelected = true; break; }
     }
     if (!isSelected && item.hidden) {
-      // skip
     } else if (!isSelected) {
       item.hidden = true;
       hidden.push(item);
@@ -107,6 +106,15 @@ function getSelectedAsSVG() {
   tmpFile.open('r');
   var content = tmpFile.read();
   tmpFile.close();
+  return content;
+}
+
+function getSVGByUri(uri) {
+  var f = new File(uri);
+  if (!f.exists) return '';
+  f.open('r');
+  var content = f.read();
+  f.close();
   return content;
 }
 
