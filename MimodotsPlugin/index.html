@@ -24,8 +24,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
 .bg .btn.a{background:#4caf50;color:#fff;border-color:#4caf50;z-index:1}
 .cs{width:28px;height:28px;border:1px solid #505050;border-radius:3px;cursor:pointer;position:relative;overflow:hidden}
 .cs input[type=color]{position:absolute;top:-5px;left:-5px;width:40px;height:40px;border:none;cursor:pointer}
-#pv{width:100%;aspect-ratio:1;background:#1a1a1a;border:1px solid #505050;border-radius:4px;margin-bottom:4px;overflow:hidden}
-#pv svg{width:100%;height:100%}
+#pv{width:100%;aspect-ratio:1;background:#1a1a1a;border:1px solid #505050;border-radius:4px;margin-bottom:4px;overflow:hidden;position:relative}
+#pv svg{width:100%;height:100%;display:block}
 .dl{font-size:10px;color:#999;text-align:center;margin-bottom:8px}
 #dropzone{width:100%;min-height:50px;border:2px dashed #505050;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#666;font-size:11px;margin-bottom:6px;transition:border-color .2s}
 #dropzone.over{border-color:#4caf50;color:#4caf50}
@@ -103,6 +103,8 @@ try{
 var cols=S.w,rows=S.h,gf=S.g/100,c=10,pad=c*gf/2,inn=c-pad*2,sw=cols*c,sh=rows*c;
 var svg=document.createElementNS(ns,"svg");
 svg.setAttribute("viewBox","0 0 "+sw+" "+sh);
+svg.setAttribute("overflow","hidden");
+svg.style.overflow="hidden";
 
 var bg=document.createElementNS(ns,"rect");
 bg.setAttribute("width",sw);bg.setAttribute("height",sh);bg.setAttribute("fill","#1a1a1a");svg.appendChild(bg);
@@ -123,12 +125,12 @@ vb="0 0 "+sw2+" "+sh2;
 var parts=vb.split(/[\s,]+/).map(Number);
 var iw=parts[2],ih=parts[3];
 if(iw>0&&ih>0){
-var scale=Math.min(sw/iw,sh/ih);
+var scale=Math.max(sw/iw,sh/ih);
 var dw=iw*scale,dh=ih*scale;
 var dx=(sw-dw)/2,dy=(sh-dh)/2;
 
 var g=document.createElementNS(ns,"g");
-g.setAttribute("transform","translate("+dx+","+dy+") scale("+scale+")");
+g.setAttribute("transform","translate("+dx.toFixed(2)+","+dy.toFixed(2)+") scale("+scale.toFixed(4)+")");
 g.setAttribute("opacity","0.35");
 
 var children=srcRoot.childNodes;
