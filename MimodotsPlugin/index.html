@@ -105,34 +105,16 @@ for(var y=0;y<=rows;y++){var l2=document.createElementNS(ns,"line");l2.setAttrib
 
 if(assetSVG){
 try{
-var parser=new DOMParser();
-var svgDoc=parser.parseFromString(assetSVG,"image/svg+xml");
-var errNode=svgDoc.querySelector("parsererror");
-if(!errNode){
-var imported=svgDoc.documentElement;
-var vb=imported.getAttribute("viewBox");
-if(!vb){
-var w=parseFloat(imported.getAttribute("width"))||sw;
-var h=parseFloat(imported.getAttribute("height"))||sh;
-imported.setAttribute("viewBox","0 0 "+w+" "+h);
-vb="0 0 "+w+" "+h;
-}
-var parts=vb.split(/[\s,]+/).map(Number);
-var iw=parts[2],ih=parts[3];
-if(iw>0&&ih>0){
-var scale=Math.max(sw/iw,sh/ih);
-var dw=iw*scale,dh=ih*scale;
-var dx=(sw-dw)/2,dy=(sh-dh)/2;
-imported.setAttribute("x",dx);
-imported.setAttribute("y",dy);
-imported.setAttribute("width",dw);
-imported.setAttribute("height",dh);
-imported.setAttribute("opacity","0.35");
-imported.removeAttribute("class");
-imported.removeAttribute("id");
-svg.appendChild(imported);
-}
-}
+var b64=btoa(unescape(encodeURIComponent(assetSVG)));
+var img=document.createElementNS(ns,"image");
+img.setAttribute("href","data:image/svg+xml;base64,"+b64);
+img.setAttribute("x","0");
+img.setAttribute("y","0");
+img.setAttribute("width",sw);
+img.setAttribute("height",sh);
+img.setAttribute("opacity","0.35");
+img.setAttribute("preserveAspectRatio","xMidYMid slice");
+svg.appendChild(img);
 }catch(e){}}
 
 for(var py=0;py<rows;py++){for(var px=0;px<cols;px++){
