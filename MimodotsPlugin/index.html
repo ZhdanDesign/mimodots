@@ -24,9 +24,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
 .bg .btn.a{background:#4caf50;color:#fff;border-color:#4caf50;z-index:1}
 .cs{width:28px;height:28px;border:1px solid #505050;border-radius:3px;cursor:pointer;position:relative;overflow:hidden}
 .cs input[type=color]{position:absolute;top:-5px;left:-5px;width:40px;height:40px;border:none;cursor:pointer}
-#pv{width:100%;aspect-ratio:1;background:#1a1a1a;border:1px solid #505050;border-radius:4px;margin-bottom:4px;overflow:hidden;position:relative}
-#pv svg{position:absolute;top:0;left:0;width:100%;height:100%}
-#pv img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;opacity:0.35}
+#pv{width:100%;aspect-ratio:1;background:#1a1a1a;border:1px solid #505050;border-radius:4px;margin-bottom:4px;overflow:hidden}
+#pv svg{width:100%;height:100%;display:block}
 .dl{font-size:10px;color:#999;text-align:center;margin-bottom:8px}
 #dropzone{width:100%;min-height:50px;border:2px dashed #505050;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#666;font-size:11px;margin-bottom:6px;transition:border-color .2s}
 #dropzone.over{border-color:#4caf50;color:#4caf50}
@@ -94,14 +93,7 @@ function dl(){document.getElementById("dl").textContent=S.w+" x "+S.h}
 
 function loadAssetFromString(svgStr){
 assetSVG=svgStr;
-var pv=document.getElementById("pv");
-var oldImg=pv.querySelector("img.asset");
-if(oldImg)oldImg.remove();
-var img=document.createElement("img");
-img.className="asset";
-img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svgStr);
-pv.appendChild(img);
-document.getElementById("dropzone").textContent="Loaded ("+svgStr.length+"b)";
+document.getElementById("dropzone").textContent="Asset loaded ("+svgStr.length+"b)";
 document.getElementById("dropzone").className="loaded";
 }
 
@@ -152,9 +144,6 @@ document.getElementById("dl").textContent=preview;
 
 document.getElementById("resetBtn").addEventListener("click",function(){
 assetSVG=null;
-var pv=document.getElementById("pv");
-var oldImg=pv.querySelector("img.asset");
-if(oldImg)oldImg.remove();
 document.getElementById("dropzone").textContent="Drag object from document or click Grab";
 document.getElementById("dropzone").className="";
 render();
