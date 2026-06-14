@@ -77,18 +77,22 @@ function getSelectedAsSVG() {
   var sel = doc.selection;
   if (!sel || sel.length === 0) return '';
 
-  var tmpDoc = app.documents.add(
-    doc.documentColorSpace,
-    doc.width,
-    doc.height,
-    1,
-    DocumentArtboardLayout.GridByRow,
-    10,
-    1
-  );
-
+  var refs = [];
   for (var i = 0; i < sel.length; i++) {
-    sel[i].duplicate(tmpDoc.activeElement || tmpDoc.layers[0], ElementPlacement.PLACEATEND);
+    refs.push(sel[i]);
+  }
+
+  var toRemove = [];
+  for (var i = doc.pageItems.length - 1; i >= 0; i--) {
+    var item = doc.pageItems[i];
+    var isSel = false;
+    for (var j = 0; j < refs.length; j++) {
+      if (item === refs[j]) { isSel = true; break; }
+    }
+    if (!isSel) {
+      toRemove.push({ parent: item.parent, next: item.nextItem, item: item });
+      item.remove();
+    }
   }
 
   var tmpFile = new File(Folder.temp + '/mimodots_sel.svg');
@@ -97,9 +101,9 @@ function getSelectedAsSVG() {
   svgOpts.documentEncoding = SVGDocumentEncoding.UTF8;
   svgOpts.DTD = SVGDTDVersion.SVG1_1;
   svgOpts.coordinatePrecision = 2;
-  tmpDoc.exportFile(tmpFile, ExportType.SVG, svgOpts);
+  doc.exportFile(tmpFile, ExportType.SVG, svgOpts);
 
-  tmpDoc.close(SaveOptions.DONOTSAVECHANGES);
+  app.undo();
 
   tmpFile.open('r');
   var content = tmpFile.read();
