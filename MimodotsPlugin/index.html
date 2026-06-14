@@ -111,18 +111,25 @@ bg.setAttribute("width",sw);bg.setAttribute("height",sh);bg.setAttribute("fill",
 
 if(assetSVG){
 try{
+document.getElementById("dl").textContent="Parsing SVG...";
 var parser=new DOMParser();
 var svgDoc=parser.parseFromString(assetSVG,"image/svg+xml");
 var errNode=svgDoc.querySelector("parsererror");
-if(!errNode){
+if(errNode){
+document.getElementById("dl").textContent="Parse error: "+errNode.textContent.substring(0,100);
+}else{
 var srcRoot=svgDoc.documentElement;
+var tag=srcRoot.localName||srcRoot.tagName;
 var vb=srcRoot.getAttribute("viewBox");
-if(!vb){
-var sw2=parseFloat(srcRoot.getAttribute("width"))||100;
-var sh2=parseFloat(srcRoot.getAttribute("height"))||100;
-vb="0 0 "+sw2+" "+sh2;
+var w=srcRoot.getAttribute("width");
+var h=srcRoot.getAttribute("height");
+document.getElementById("dl").textContent="tag="+tag+" vb="+vb+" w="+w+" h="+h;
+
+var vbStr=vb;
+if(!vbStr){
+vbStr="0 0 "+(parseFloat(w)||100)+" "+(parseFloat(h)||100);
 }
-var parts=vb.split(/[\s,]+/).map(Number);
+var parts=vbStr.split(/[\s,]+/).map(Number);
 var iw=parts[2],ih=parts[3];
 if(iw>0&&ih>0){
 var scale=Math.max(sw/iw,sh/ih);
@@ -133,23 +140,25 @@ var g=document.createElementNS(ns,"g");
 g.setAttribute("opacity","0.35");
 
 var innerSvg=document.createElementNS(ns,"svg");
-innerSvg.setAttribute("viewBox",vb);
+innerSvg.setAttribute("viewBox",vbStr);
 innerSvg.setAttribute("x",dx.toFixed(2));
 innerSvg.setAttribute("y",dy.toFixed(2));
 innerSvg.setAttribute("width",(iw*scale).toFixed(2));
 innerSvg.setAttribute("height",(ih*scale).toFixed(2));
-innerSvg.setAttribute("overflow","hidden");
 
 var children=srcRoot.childNodes;
+var count=0;
 for(var ci=0;ci<children.length;ci++){
 var node=children[ci].cloneNode(true);
 innerSvg.appendChild(node);
+count++;
 }
 g.appendChild(innerSvg);
 svg.appendChild(g);
+document.getElementById("dl").textContent="Rendered "+count+" children, vb="+vbStr;
 }
 }
-}catch(e){}}
+}catch(e){document.getElementById("dl").textContent="Error: "+e.message}}
 
 for(var x=0;x<=cols;x++){var l=document.createElementNS(ns,"line");l.setAttribute("x1",x*c);l.setAttribute("y1",0);l.setAttribute("x2",x*c);l.setAttribute("y2",sh);l.setAttribute("stroke","rgba(255,255,255,0.08)");l.setAttribute("stroke-width","0.3");svg.appendChild(l)}
 for(var y=0;y<=rows;y++){var l2=document.createElementNS(ns,"line");l2.setAttribute("x1",0);l2.setAttribute("y1",y*c);l2.setAttribute("x2",sw);l2.setAttribute("y2",y*c);l2.setAttribute("stroke","rgba(255,255,255,0.08)");l2.setAttribute("stroke-width","0.3");svg.appendChild(l2)}
