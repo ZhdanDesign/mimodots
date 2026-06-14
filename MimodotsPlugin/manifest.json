@@ -31,22 +31,43 @@
         "width": 320,
         "height": 640
       },
+      "commands": [],
       "icons": [
         {
-          "width": 23,
-          "height": 23,
+          "width": 32,
+          "height": 32,
           "path": "icons/dark.png",
           "scale": [1, 2],
-          "theme": ["dark", "darkest"]
+          "theme": ["dark", "darkest"],
+          "species": ["generic"]
         },
         {
-          "width": 23,
-          "height": 23,
+          "width": 32,
+          "height": 32,
           "path": "icons/light.png",
           "scale": [1, 2],
-          "theme": ["light", "lightest"]
+          "theme": ["light", "lightest"],
+          "species": ["generic"]
         }
       ]
+    }
+  ],
+  "icons": [
+    {
+      "width": 32,
+      "height": 32,
+      "path": "icons/dark.png",
+      "scale": [1, 2],
+      "theme": ["dark", "darkest"],
+      "species": ["generic"]
+    },
+    {
+      "width": 32,
+      "height": 32,
+      "path": "icons/light.png",
+      "scale": [1, 2],
+      "theme": ["light", "lightest"],
+      "species": ["generic"]
     }
   ]
 }
