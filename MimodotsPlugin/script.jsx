@@ -77,23 +77,32 @@ function getSelectedAsSVG() {
   var sel = doc.selection;
   if (!sel || sel.length === 0) return '';
 
-  var toRemove = [];
-  for (var i = doc.pageItems.length - 1; i >= 0; i--) {
-    var item = doc.pageItems[i];
-    var isSel = false;
-    for (var j = 0; j < sel.length; j++) {
-      if (item === sel[j]) { isSel = true; break; }
-    }
-    if (!isSel) {
-      toRemove.push(item);
-    }
+  var bounds = sel[0].visibleBounds;
+  for (var i = 1; i < sel.length; i++) {
+    var b = sel[i].visibleBounds;
+    if (b[0] < bounds[0]) bounds[0] = b[0];
+    if (b[1] > bounds[1]) bounds[1] = b[1];
+    if (b[2] > bounds[2]) bounds[2] = b[2];
+    if (b[3] < bounds[3]) bounds[3] = b[3];
   }
 
-  for (var i = 0; i < toRemove.length; i++) {
-    toRemove[i].remove();
-  }
+  var selBounds = { l: bounds[0], t: bounds[1], r: bounds[2], b: bounds[3] };
 
-  app.redraw();
+  var allHidden = [];
+  for (var i = 0; i < doc.layers.length; i++) {
+    var layer = doc.layers[i];
+    for (var j = 0; j < layer.pageItems.length; j++) {
+      var item = layer.pageItems[j];
+      var isSel = false;
+      for (var k = 0; k < sel.length; k++) {
+        if (item === sel[k]) { isSel = true; break; }
+      }
+      if (!isSel && !item.hidden) {
+        item.hidden = true;
+        allHidden.push(item);
+      }
+    }
+  }
 
   var tmpFile = new File(Folder.temp + '/mimodots_sel.svg');
   var svgOpts = new ExportOptionsSVG();
@@ -103,8 +112,9 @@ function getSelectedAsSVG() {
   svgOpts.coordinatePrecision = 2;
   doc.exportFile(tmpFile, ExportType.SVG, svgOpts);
 
-  app.undo();
-  app.redraw();
+  for (var i = 0; i < allHidden.length; i++) {
+    allHidden[i].hidden = false;
+  }
 
   tmpFile.open('r');
   var content = tmpFile.read();

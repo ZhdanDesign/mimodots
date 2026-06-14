@@ -163,10 +163,11 @@ document.getElementById("grabBtn").addEventListener("click",function(){
 document.getElementById("dl").textContent="Grabbing...";
 cs.evalScript("getSelectedAsSVG()",function(res){
 if(res&&res.length>50&&res.indexOf("<svg")>=0){
-document.getElementById("dl").textContent="SVG OK, len="+res.length;
+document.getElementById("dl").textContent="SVG OK len="+res.length;
 loadAssetFromString(res);
 }else{
-document.getElementById("dl").textContent="Bad SVG: "+(res?res.substring(0,80):"null");
+var preview=res?res.substring(0,120):"null";
+document.getElementById("dl").textContent=preview;
 }
 })});
 
