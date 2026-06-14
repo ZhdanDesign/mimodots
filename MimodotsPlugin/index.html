@@ -111,51 +111,52 @@ bg.setAttribute("width",sw);bg.setAttribute("height",sh);bg.setAttribute("fill",
 
 if(assetSVG){
 try{
-document.getElementById("dl").textContent="Parsing SVG...";
 var parser=new DOMParser();
 var svgDoc=parser.parseFromString(assetSVG,"image/svg+xml");
 var errNode=svgDoc.querySelector("parsererror");
-if(errNode){
-document.getElementById("dl").textContent="Parse error: "+errNode.textContent.substring(0,100);
-}else{
+if(!errNode){
 var srcRoot=svgDoc.documentElement;
-var tag=srcRoot.localName||srcRoot.tagName;
 var vb=srcRoot.getAttribute("viewBox");
-var w=srcRoot.getAttribute("width");
-var h=srcRoot.getAttribute("height");
-document.getElementById("dl").textContent="tag="+tag+" vb="+vb+" w="+w+" h="+h;
-
-var vbStr=vb;
-if(!vbStr){
-vbStr="0 0 "+(parseFloat(w)||100)+" "+(parseFloat(h)||100);
+if(!vb){
+var sw2=parseFloat(srcRoot.getAttribute("width"))||100;
+var sh2=parseFloat(srcRoot.getAttribute("height"))||100;
+vb="0 0 "+sw2+" "+sh2;
 }
-var parts=vbStr.split(/[\s,]+/).map(Number);
+var parts=vb.split(/[\s,]+/).map(Number);
 var iw=parts[2],ih=parts[3];
 if(iw>0&&ih>0){
-var scale=Math.max(sw/iw,sh/ih);
-var dx=(sw-iw*scale)/2;
-var dy=(sh-ih*scale)/2;
+var scale=Math.min(sw/iw,sh/ih);
+var dw=iw*scale;
+var dh=ih*scale;
+var dx=(sw-dw)/2;
+var dy=(sh-dh)/2;
 
 var g=document.createElementNS(ns,"g");
 g.setAttribute("opacity","0.35");
+g.setAttribute("transform","translate("+dx.toFixed(2)+","+dy.toFixed(2)+") scale("+scale.toFixed(6)+")");
 
-var innerSvg=document.createElementNS(ns,"svg");
-innerSvg.setAttribute("viewBox",vbStr);
-innerSvg.setAttribute("x",dx.toFixed(2));
-innerSvg.setAttribute("y",dy.toFixed(2));
-innerSvg.setAttribute("width",(iw*scale).toFixed(2));
-innerSvg.setAttribute("height",(ih*scale).toFixed(2));
-
-var children=srcRoot.childNodes;
-var count=0;
-for(var ci=0;ci<children.length;ci++){
-var node=children[ci].cloneNode(true);
-innerSvg.appendChild(node);
-count++;
+function cloneDeep(node,tag){
+if(!node||node.nodeType!==1)return;
+var allowed={"path":1,"rect":1,"circle":1,"ellipse":1,"line":1,"polyline":1,"polygon":1,"g":1,"use":1};
+if(!allowed[tag.toLowerCase()]&&tag.toLowerCase()!=="svg")return;
+var el=document.createElementNS(ns,tag);
+for(var ai=0;ai<node.attributes.length;ai++){
+var a=node.attributes[ai];
+el.setAttribute(a.name,a.value);
 }
-g.appendChild(innerSvg);
+for(var ci=0;ci<node.childNodes.length;ci++){
+var child=node.childNodes[ci];
+if(child.nodeType===1)cloneDeep(child,child.localName||child.tagName);
+}
+g.appendChild(el);
+}
+
+var ch=srcRoot.childNodes;
+for(var ci=0;ci<ch.length;ci++){
+if(ch[ci].nodeType===1)cloneDeep(ch[ci],ch[ci].localName||ch[ci].tagName);
+}
 svg.appendChild(g);
-document.getElementById("dl").textContent="Rendered "+count+" children, vb="+vbStr;
+document.getElementById("dl").textContent="Rendered "+iw+"x"+ih+" → "+dw.toFixed(0)+"x"+dh.toFixed(0);
 }
 }
 }catch(e){document.getElementById("dl").textContent="Error: "+e.message}}
