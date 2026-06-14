@@ -76,6 +76,22 @@ function getSelectedAsSVG() {
   if (!doc) return '';
   var sel = doc.selection;
   if (!sel || sel.length === 0) return '';
+
+  var hidden = [];
+  for (var i = 0; i < doc.pageItems.length; i++) {
+    var item = doc.pageItems[i];
+    var isSelected = false;
+    for (var j = 0; j < sel.length; j++) {
+      if (sel[j] === item) { isSelected = true; break; }
+    }
+    if (!isSelected && item.hidden) {
+      // skip
+    } else if (!isSelected) {
+      item.hidden = true;
+      hidden.push(item);
+    }
+  }
+
   var tmpFile = new File(Folder.temp + '/mimodots_sel.svg');
   var svgOpts = new ExportOptionsSVG();
   svgOpts.embedRasterImages = true;
@@ -83,6 +99,11 @@ function getSelectedAsSVG() {
   svgOpts.DTD = SVGDTDVersion.SVG1_1;
   svgOpts.coordinatePrecision = 2;
   doc.exportFile(tmpFile, ExportType.SVG, svgOpts);
+
+  for (var k = 0; k < hidden.length; k++) {
+    hidden[k].hidden = false;
+  }
+
   tmpFile.open('r');
   var content = tmpFile.read();
   tmpFile.close();

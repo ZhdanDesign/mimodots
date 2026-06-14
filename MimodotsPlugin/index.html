@@ -96,6 +96,7 @@ try{
 var cols=S.w,rows=S.h,gf=S.g/100,c=10,pad=c*gf/2,inn=c-pad*2,sw=cols*c,sh=rows*c;
 var svg=document.createElementNS(ns,"svg");
 svg.setAttribute("viewBox","0 0 "+sw+" "+sh);
+svg.setAttribute("overflow","hidden");
 var bg=document.createElementNS(ns,"rect");
 bg.setAttribute("width",sw);bg.setAttribute("height",sh);bg.setAttribute("fill","#1a1a1a");svg.appendChild(bg);
 
@@ -119,7 +120,7 @@ vb="0 0 "+w+" "+h;
 var parts=vb.split(/[\s,]+/).map(Number);
 var iw=parts[2],ih=parts[3];
 if(iw>0&&ih>0){
-var scale=Math.min(sw/iw,sh/ih);
+var scale=Math.max(sw/iw,sh/ih);
 var dw=iw*scale,dh=ih*scale;
 var dx=(sw-dw)/2,dy=(sh-dh)/2;
 imported.setAttribute("x",dx);
