@@ -1,6 +1,6 @@
 function generateGrid(cols, rows, cellSize, pad, innerW, innerH, r, g, b, shapeType) {
   var doc = app.activeDocument;
-  if (!doc) { return 'No document'; }
+  if (!doc) return 'No document';
 
   var ab = doc.artboards[doc.artboards.getActiveArtboardIndex()];
   var abRect = ab.artboardRect;
@@ -71,29 +71,6 @@ function generateGrid(cols, rows, cellSize, pad, innerW, innerH, r, g, b, shapeT
   return 'OK:' + cols + 'x' + rows;
 }
 
-function exportSVG() {
-  var doc = app.activeDocument;
-  if (!doc) { return 'No document'; }
-  var sel = doc.selection;
-  var items;
-  if (sel && sel.length > 0) {
-    items = sel;
-  } else {
-    items = doc.pageItems;
-  }
-  var tmpFile = new File(Folder.temp + '/mimodots_export.svg');
-  var svgOpts = new ExportOptionsSVG();
-  svgOpts.embedRasterImages = true;
-  svgOpts.documentEncoding = SVGDocumentEncoding.UTF8;
-  svgOpts.DTD = SVGDTDVersion.SVG1_1;
-  svgOpts.coordinatePrecision = 2;
-  doc.exportFile(tmpFile, ExportType.SVG, svgOpts);
-  tmpFile.open('r');
-  var svgContent = tmpFile.read();
-  tmpFile.close();
-  return svgContent;
-}
-
 function getSelectedAsSVG() {
   var doc = app.activeDocument;
   if (!doc) return '';
@@ -110,4 +87,18 @@ function getSelectedAsSVG() {
   var content = tmpFile.read();
   tmpFile.close();
   return content;
+}
+
+function exportSVG() {
+  var doc = app.activeDocument;
+  if (!doc) return;
+  var f = File.saveDialog('Save SVG', 'SVG:*.svg');
+  if (!f) return;
+  var o = new ExportOptionsSVG();
+  o.embedRasterImages = true;
+  o.documentEncoding = SVGDocumentEncoding.UTF8;
+  o.DTD = SVGDTDVersion.SVG1_1;
+  o.coordinatePrecision = 2;
+  doc.exportFile(f, ExportType.SVG, o);
+  return 'Saved';
 }
