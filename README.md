@@ -16,7 +16,7 @@
 
 ### Плагин для Illustrator (`MimodotsPlugin/`)
 
-Панель для Adobe Illustrator. Создаёт пиксельные сетки прямо в документе.
+UXP-плагин для Adobe Illustrator. Создаёт пиксельные сетки прямо в документе.
 
 - См. `MimodotsPlugin/README.md` для инструкций по установке
 

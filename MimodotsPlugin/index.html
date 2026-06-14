@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 12px;
+  background: #2c2c2c;
+  color: #e0e0e0;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+h2 {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.section {
+  margin-bottom: 12px;
+}
+
+.section-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+label {
+  font-size: 11px;
+  color: #999;
+  min-width: 50px;
+}
+
+input[type="range"] {
+  flex: 1;
+  height: 3px;
+  -webkit-appearance: none;
+  background: #505050;
+  border-radius: 2px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  cursor: pointer;
+}
+
+.val {
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 30px;
+  text-align: right;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #505050;
+  border-radius: 4px;
+  background: #383838;
+  color: #e0e0e0;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn:hover { background: #444; }
+
+.btn-primary {
+  background: #4caf50;
+  color: #fff;
+  border-color: #4caf50;
+}
+
+.btn-primary:hover { background: #43a047; }
+
+.btn-group {
+  display: flex;
+}
+
+.btn-group .btn {
+  border-radius: 0;
+  margin-left: -1px;
+  padding: 5px 8px;
+}
+
+.btn-group .btn:first-child { border-radius: 3px 0 0 3px; margin-left: 0; }
+.btn-group .btn:last-child { border-radius: 0 3px 3px 0; }
+
+.btn-group .btn.active {
+  background: #4caf50;
+  color: #fff;
+  border-color: #4caf50;
+  z-index: 1;
+}
+
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #505050;
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.color-swatch input[type="color"] {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  cursor: pointer;
+}
+
+#preview {
+  width: 100%;
+  aspect-ratio: 1;
+  background: #1a1a1a;
+  border: 1px solid #505050;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  overflow: hidden;
+}
+
+#preview svg {
+  width: 100%;
+  height: 100%;
+}
+
+.dim-label {
+  font-size: 10px;
+  color: #999;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+#fileInput { display: none; }
+</style>
+</head>
+<body>
+
+<h2>Mimodots — Пиксельная сетка</h2>
+
+<div class="section">
+  <div class="section-title">Размер сетки</div>
+  <div class="row">
+    <label>Ширина</label>
+    <input type="range" id="widthSlider" min="8" max="256" value="32">
+    <span class="val" id="widthVal">32</span>
+  </div>
+  <div class="row">
+    <label>Высота</label>
+    <input type="range" id="heightSlider" min="8" max="256" value="32">
+    <span class="val" id="heightVal">32</span>
+  </div>
+  <div class="row" style="margin-top:4px">
+    <label>Формат</label>
+    <div class="btn-group" style="flex:1">
+      <button class="btn active" data-ratio="free" style="flex:1">Свободный</button>
+      <button class="btn" data-ratio="square" style="flex:1">1:1</button>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Форма пикселей</div>
+  <div class="btn-group">
+    <button class="btn active" data-shape="square" style="flex:1">■ Квадрат</button>
+    <button class="btn" data-shape="circle" style="flex:1">● Круг</button>
+    <button class="btn" data-shape="hex" style="flex:1">⬡ Грань</button>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Внешний вид</div>
+  <div class="row">
+    <label>Зазор</label>
+    <input type="range" id="gapSlider" min="0" max="50" value="10">
+    <span class="val" id="gapVal">10%</span>
+  </div>
+  <div class="row">
+    <label>Цвет</label>
+    <div class="color-swatch">
+      <input type="color" id="colorPicker" value="#4caf50">
+    </div>
+    <span class="val" id="colorVal">#4caf50</span>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Превью</div>
+  <div id="preview"></div>
+  <div class="dim-label" id="dimLabel">32 × 32</div>
+</div>
+
+<div class="section">
+  <button class="btn" id="importBtn" style="margin-bottom:6px">📁 Импорт SVG в документ</button>
+  <input type="file" id="fileInput" accept=".svg,image/svg+xml">
+  <button class="btn btn-primary" id="generateBtn">⚡ Создать пиксельную сетку</button>
+</div>
+
+<div class="section">
+  <button class="btn" id="exportBtn">⬇ Экспорт выделения как SVG</button>
+</div>
+
+<script src="index.js"></script>
+</body>
+</html>

@@ -1,22 +1,28 @@
 # Mimodots — Плагин для Adobe Illustrator
 
-Пиксельный грид-генератор иконок в виде панели для Adobe Illustrator.
+UXP-плагин для Adobe Illustrator. Создаёт пиксельные сетки прямо в документе.
 
 ## Установка
 
-1. Скопируйте папку `MimodotsPlugin` в:
-   - **macOS:** `~/Library/Application Support/Adobe/CEP/extensions/`
-   - **Windows:** `%APPDATA%\Adobe\CEP\extensions\`
+### Способ 1: UXP Developer Tool (рекомендуется)
 
-2. Включите режим разработчика (если ещё не включён):
-   - **macOS:** `defaults write com.adobe.CSXS.10 PlayerDebugMode 1`
-   - **Windows:** создайте ключ реестра `PlayerDebugMode` = `1` в `HKCU\Software\Adobe\CSXS.10`
+1. Установите [UXP Developer Tool](https://developer.adobe.com/console/apis/uxp) через Creative Cloud
+2. Откройте UDT, нажмите «Add Plugin» и выберите папку `MimodotsPlugin`
+3. Нажмите «Load» — плагин появится в Illustrator
 
-3. Перезапустите Illustrator. Плагин будет в меню **Window → Extensions → Mimodots Pixel Grid**
+### Способ 2: Вручную
+
+Скопируйте папку `MimodotsPlugin` в:
+
+```
+~/Library/Application Support/Adobe/UXP/Plugins/com.mimodots.pixelgrid/
+```
+
+Перезапустите Illustrator. Плагин будет в **Window → Extensions → Mimodots Pixel Grid**.
 
 ## Что делает
 
-- Генерирует пиксельную сетку прямо в документе Illustrator
+- Генерирует пиксельную сетку в документе Illustrator
 - Квадратные, круглые и шестиугольные пиксели
 - Настройка зазора и цвета
 - Импорт SVG в документ
@@ -24,4 +30,4 @@
 
 ## Требования
 
-- Adobe Illustrator 2022 (v26.0) или выше
+- Adobe Illustrator 2024 (v29.0) или выше
