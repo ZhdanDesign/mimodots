@@ -79,7 +79,6 @@ var S={w:32,h:32,s:"square",g:10,c:"#4caf50"};
 var ns="http://www.w3.org/2000/svg";
 var cs=new CSInterface();
 var assetSVG=null;
-var assetURL=null;
 
 document.querySelectorAll("[data-s]").forEach(function(b){b.addEventListener("click",function(){
 document.querySelectorAll("[data-s]").forEach(function(x){x.classList.remove("a")});
@@ -94,9 +93,6 @@ function dl(){document.getElementById("dl").textContent=S.w+" x "+S.h}
 
 function loadAssetFromString(svgStr){
 assetSVG=svgStr;
-var blob=new Blob([svgStr],{type:"image/svg+xml;charset=utf-8"});
-var url=URL.createObjectURL(blob);
-assetURL=url;
 document.getElementById("dropzone").textContent="Loaded ("+svgStr.length+"b)";
 document.getElementById("dropzone").className="loaded";
 render();
@@ -113,16 +109,17 @@ svg.style.overflow="hidden";
 var bg=document.createElementNS(ns,"rect");
 bg.setAttribute("width",sw);bg.setAttribute("height",sh);bg.setAttribute("fill","#1a1a1a");svg.appendChild(bg);
 
-if(assetURL){
-var imgEl=document.createElementNS(ns,"image");
-imgEl.setAttributeNS("http://www.w3.org/1999/xlink","href",assetURL);
-imgEl.setAttribute("x","0");
-imgEl.setAttribute("y","0");
-imgEl.setAttribute("width",sw);
-imgEl.setAttribute("height",sh);
-imgEl.setAttribute("opacity","0.35");
-imgEl.setAttribute("preserveAspectRatio","xMidYMid meet");
-svg.appendChild(imgEl);
+if(assetSVG){
+var label=document.createElementNS(ns,"text");
+label.setAttribute("x",sw/2);
+label.setAttribute("y",sh/2);
+label.setAttribute("text-anchor","middle");
+label.setAttribute("dominant-baseline","middle");
+label.setAttribute("fill","#4caf50");
+label.setAttribute("font-size","10");
+label.setAttribute("opacity","0.6");
+label.textContent="Asset: "+assetSVG.length+" bytes";
+svg.appendChild(label);
 }
 
 for(var x=0;x<=cols;x++){var l=document.createElementNS(ns,"line");l.setAttribute("x1",x*c);l.setAttribute("y1",0);l.setAttribute("x2",x*c);l.setAttribute("y2",sh);l.setAttribute("stroke","rgba(255,255,255,0.08)");l.setAttribute("stroke-width","0.3");svg.appendChild(l)}
@@ -161,7 +158,6 @@ document.getElementById("dl").textContent=preview;
 
 document.getElementById("resetBtn").addEventListener("click",function(){
 assetSVG=null;
-assetURL=null;
 document.getElementById("dropzone").textContent="Drag object from document or click Grab";
 document.getElementById("dropzone").className="";
 render();
