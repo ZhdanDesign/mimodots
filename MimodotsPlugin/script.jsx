@@ -77,21 +77,19 @@ function getSelectedAsSVG() {
   var sel = doc.selection;
   if (!sel || sel.length === 0) return '';
 
-  var refs = [];
-  for (var i = 0; i < sel.length; i++) {
-    refs.push(sel[i]);
+  var tmpLayer = doc.layers.add();
+  tmpLayer.name = '__mimodots_tmp__';
+
+  for (var i = sel.length - 1; i >= 0; i--) {
+    sel[i].move(tmpLayer, ElementPlacement.PLACEATBEGINNING);
   }
 
-  var toRemove = [];
-  for (var i = doc.pageItems.length - 1; i >= 0; i--) {
-    var item = doc.pageItems[i];
-    var isSel = false;
-    for (var j = 0; j < refs.length; j++) {
-      if (item === refs[j]) { isSel = true; break; }
-    }
-    if (!isSel) {
-      toRemove.push({ parent: item.parent, next: item.nextItem, item: item });
-      item.remove();
+  var hiddenLayers = [];
+  for (var i = 0; i < doc.layers.length; i++) {
+    var layer = doc.layers[i];
+    if (layer.name !== '__mimodots_tmp__' && !layer.hidden) {
+      layer.hidden = true;
+      hiddenLayers.push(layer);
     }
   }
 
@@ -103,7 +101,18 @@ function getSelectedAsSVG() {
   svgOpts.coordinatePrecision = 2;
   doc.exportFile(tmpFile, ExportType.SVG, svgOpts);
 
-  app.undo();
+  for (var i = 0; i < hiddenLayers.length; i++) {
+    hiddenLayers[i].hidden = false;
+  }
+
+  var srcLayer = doc.layersByName('__mimodots_tmp__')[0];
+  if (srcLayer && srcLayer.pageItems.length > 0) {
+    var targetLayer = doc.layers[0];
+    while (srcLayer.pageItems.length > 0) {
+      srcLayer.pageItems[0].move(targetLayer, ElementPlacement.PLACEATEND);
+    }
+  }
+  if (srcLayer) srcLayer.remove();
 
   tmpFile.open('r');
   var content = tmpFile.read();
