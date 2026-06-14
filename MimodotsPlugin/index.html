@@ -79,7 +79,6 @@ var S={w:32,h:32,s:"square",g:10,c:"#4caf50"};
 var ns="http://www.w3.org/2000/svg";
 var cs=new CSInterface();
 var assetSVG=null;
-var assetImg=null;
 
 document.querySelectorAll("[data-s]").forEach(function(b){b.addEventListener("click",function(){
 document.querySelectorAll("[data-s]").forEach(function(x){x.classList.remove("a")});
@@ -94,22 +93,9 @@ function dl(){document.getElementById("dl").textContent=S.w+" x "+S.h}
 
 function loadAssetFromString(svgStr){
 assetSVG=svgStr;
-assetImg=new Image();
-var blob=new Blob([svgStr],{type:"image/svg+xml;charset=utf-8"});
-var url=URL.createObjectURL(blob);
-assetImg.onload=function(){
-URL.revokeObjectURL(url);
-document.getElementById("dropzone").textContent="Loaded";
+document.getElementById("dropzone").textContent="Loaded ("+svgStr.length+"b)";
 document.getElementById("dropzone").className="loaded";
 render();
-};
-assetImg.onerror=function(){
-URL.revokeObjectURL(url);
-assetSVG=null;
-assetImg=null;
-document.getElementById("dropzone").textContent="Failed to load SVG";
-};
-assetImg.src=url;
 }
 
 function render(){
@@ -121,21 +107,39 @@ svg.setAttribute("viewBox","0 0 "+sw+" "+sh);
 var bg=document.createElementNS(ns,"rect");
 bg.setAttribute("width",sw);bg.setAttribute("height",sh);bg.setAttribute("fill","#1a1a1a");svg.appendChild(bg);
 
-if(assetImg&&assetImg.complete&&assetImg.naturalWidth>0){
-var iw=assetImg.naturalWidth,ih=assetImg.naturalHeight;
+if(assetSVG){
+try{
+var parser=new DOMParser();
+var svgDoc=parser.parseFromString(assetSVG,"image/svg+xml");
+var errNode=svgDoc.querySelector("parsererror");
+if(!errNode){
+var srcRoot=svgDoc.documentElement;
+var vb=srcRoot.getAttribute("viewBox");
+if(!vb){
+var sw2=parseFloat(srcRoot.getAttribute("width"))||100;
+var sh2=parseFloat(srcRoot.getAttribute("height"))||100;
+vb="0 0 "+sw2+" "+sh2;
+}
+var parts=vb.split(/[\s,]+/).map(Number);
+var iw=parts[2],ih=parts[3];
+if(iw>0&&ih>0){
 var scale=Math.min(sw/iw,sh/ih);
 var dw=iw*scale,dh=ih*scale;
 var dx=(sw-dw)/2,dy=(sh-dh)/2;
 
-var imgEl=document.createElementNS(ns,"image");
-imgEl.setAttributeNS("http://www.w3.org/1999/xlink","href",assetImg.src);
-imgEl.setAttribute("x",dx);
-imgEl.setAttribute("y",dy);
-imgEl.setAttribute("width",dw);
-imgEl.setAttribute("height",dh);
-imgEl.setAttribute("opacity","0.35");
-svg.appendChild(imgEl);
+var g=document.createElementNS(ns,"g");
+g.setAttribute("transform","translate("+dx+","+dy+") scale("+scale+")");
+g.setAttribute("opacity","0.35");
+
+var children=srcRoot.childNodes;
+for(var ci=0;ci<children.length;ci++){
+var node=children[ci].cloneNode(true);
+g.appendChild(node);
 }
+svg.appendChild(g);
+}
+}
+}catch(e){}}
 
 for(var x=0;x<=cols;x++){var l=document.createElementNS(ns,"line");l.setAttribute("x1",x*c);l.setAttribute("y1",0);l.setAttribute("x2",x*c);l.setAttribute("y2",sh);l.setAttribute("stroke","rgba(255,255,255,0.08)");l.setAttribute("stroke-width","0.3");svg.appendChild(l)}
 for(var y=0;y<=rows;y++){var l2=document.createElementNS(ns,"line");l2.setAttribute("x1",0);l2.setAttribute("y1",y*c);l2.setAttribute("x2",sw);l2.setAttribute("y2",y*c);l2.setAttribute("stroke","rgba(255,255,255,0.08)");l2.setAttribute("stroke-width","0.3");svg.appendChild(l2)}
@@ -173,7 +177,6 @@ document.getElementById("dl").textContent=preview;
 
 document.getElementById("resetBtn").addEventListener("click",function(){
 assetSVG=null;
-assetImg=null;
 document.getElementById("dropzone").textContent="Drag object from document or click Grab";
 document.getElementById("dropzone").className="";
 render();
