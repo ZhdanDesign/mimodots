@@ -77,21 +77,23 @@ function getSelectedAsSVG() {
   var sel = doc.selection;
   if (!sel || sel.length === 0) return '';
 
-  var tmpLayer = doc.layers.add();
-  tmpLayer.name = '__mimodots_tmp__';
-
-  for (var i = sel.length - 1; i >= 0; i--) {
-    sel[i].move(tmpLayer, ElementPlacement.PLACEATBEGINNING);
-  }
-
-  var hiddenLayers = [];
-  for (var i = 0; i < doc.layers.length; i++) {
-    var layer = doc.layers[i];
-    if (layer.name !== '__mimodots_tmp__' && !layer.hidden) {
-      layer.hidden = true;
-      hiddenLayers.push(layer);
+  var toRemove = [];
+  for (var i = doc.pageItems.length - 1; i >= 0; i--) {
+    var item = doc.pageItems[i];
+    var isSel = false;
+    for (var j = 0; j < sel.length; j++) {
+      if (item === sel[j]) { isSel = true; break; }
+    }
+    if (!isSel) {
+      toRemove.push(item);
     }
   }
+
+  for (var i = 0; i < toRemove.length; i++) {
+    toRemove[i].remove();
+  }
+
+  app.redraw();
 
   var tmpFile = new File(Folder.temp + '/mimodots_sel.svg');
   var svgOpts = new ExportOptionsSVG();
@@ -101,18 +103,8 @@ function getSelectedAsSVG() {
   svgOpts.coordinatePrecision = 2;
   doc.exportFile(tmpFile, ExportType.SVG, svgOpts);
 
-  for (var i = 0; i < hiddenLayers.length; i++) {
-    hiddenLayers[i].hidden = false;
-  }
-
-  var srcLayer = doc.layersByName('__mimodots_tmp__')[0];
-  if (srcLayer && srcLayer.pageItems.length > 0) {
-    var targetLayer = doc.layers[0];
-    while (srcLayer.pageItems.length > 0) {
-      srcLayer.pageItems[0].move(targetLayer, ElementPlacement.PLACEATEND);
-    }
-  }
-  if (srcLayer) srcLayer.remove();
+  app.undo();
+  app.redraw();
 
   tmpFile.open('r');
   var content = tmpFile.read();
